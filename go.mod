@@ -1,4 +1,4 @@
-module mymodule
+module go-mercado-pago-ms
 
 go 1.20
 
