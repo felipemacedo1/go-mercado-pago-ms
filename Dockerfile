@@ -17,9 +17,14 @@ RUN go build -o main ./cmd/main.go
 FROM alpine:latest
 
 WORKDIR /app
+# Copy the .env file
+COPY .env .env
 
 # Copy the binary from the builder image
 COPY --from=builder /app/main /app/main
+
+# Expose the port the application listens on
+EXPOSE 8080
 
 # Run the application
 CMD ["./main"]

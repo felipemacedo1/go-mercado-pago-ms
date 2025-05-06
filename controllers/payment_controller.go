@@ -27,9 +27,12 @@ func (pc *PaymentController) CreateCheckout(c echo.Context) error {
 }
 
 func (pc *PaymentController) ProcessWebhook(c echo.Context) error {
-	if err := pc.Service.ProcessWebhook(c.Request().Body); err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	var body map[string]interface{}
+	if err := json.NewDecoder(c.Request().Body).Decode(&body); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid JSON body"})
 	}
+
+	go pc.Service.ProcessWebhook(body)
 
 	return c.NoContent(http.StatusOK)
 }
@@ -42,3 +45,5 @@ func (pc *PaymentController) GetPayment(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, payment)
 }
+
+

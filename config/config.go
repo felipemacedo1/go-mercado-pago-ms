@@ -1,7 +1,7 @@
 package config
 
 import (
-	"log"
+	"fmt"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -12,14 +12,23 @@ type Config struct {
 	ServerPort    string
 }
 
-func LoadEnv() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
+func Load() (Config, error) {
+	if err := godotenv.Load(); err != nil {
+		return Config{}, fmt.Errorf("failed to load .env file: %w", err)
 	}
-}
 
-func (c *Config) Load() {
-	c.MPAccessToken = os.Getenv("MP_ACCESS_TOKEN")
-	c.ServerPort = os.Getenv("SERVER_PORT")
+	config := Config{
+		MPAccessToken: os.Getenv("MP_ACCESS_TOKEN"),
+		ServerPort:    os.Getenv("SERVER_PORT"),
+	}
+
+	if config.MPAccessToken == "" {
+		return Config{}, fmt.Errorf("MP_ACCESS_TOKEN not set in environment")
+	}
+
+	if config.ServerPort == "" {
+		config.ServerPort = "8080" // Default server port
+	}
+
+	return config, nil
 }

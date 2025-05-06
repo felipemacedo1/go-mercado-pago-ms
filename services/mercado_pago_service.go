@@ -20,21 +20,21 @@ type MercadoPagoService struct {
 }
 
 type preferenceItem struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Quantity    int    `json:"quantity"`
-	UnitPrice   int    `json:"unit_price"`
+	Title       string  `json:"title"`
+	Description string  `json:"description"`
+	Quantity    int     `json:"quantity"`
+	UnitPrice   float64 `json:"unit_price"`
 }
 
 type preferenceRequest struct {
-	Items           []preferenceItem `json:"items"`
-	BackUrls        map[string]string `json:"back_urls"`
-	AutoReturn      string `json:"auto_return"`
-	StatementDescriptor string `json:"statement_descriptor,omitempty"`
+	Items               []preferenceItem  `json:"items"`
+	BackUrls            map[string]string `json:"back_urls"`
+	AutoReturn          string            `json:"auto_return"`
+	StatementDescriptor string            `json:"statement_descriptor,omitempty"`
 }
 
 func (s *MercadoPagoService) CreatePreference(req models.PreferenceRequest) (models.CreatePreferenceResponse, error) {
-	
+
 	preference := preferenceRequest{
 		Items: []preferenceItem{
 			{
@@ -49,10 +49,10 @@ func (s *MercadoPagoService) CreatePreference(req models.PreferenceRequest) (mod
 			"failure": "http://localhost:8080/failure",
 			"pending": "http://localhost:8080/pending",
 		},
-		AutoReturn:      "approved",
+		AutoReturn:          "approved",
 		StatementDescriptor: "MERCADOPAGO",
 	}
-	
+
 	payload, err := json.Marshal(preference)
 	if err != nil {
 		utils.Logger.Error(fmt.Sprintf("Error creating preference: %v", err))
@@ -129,7 +129,6 @@ func (s *MercadoPagoService) GetPayment(paymentId string) (models.PaymentRespons
 		utils.Logger.Error(fmt.Sprintf("Error getting payment: %v", bodyString))
 		return models.PaymentResponse{}, errors.New(fmt.Sprintf("Error getting payment: %v", bodyString))
 	}
-	
 
 	var result map[string]interface{}
 	err = json.Unmarshal([]byte(bodyString), &result)
@@ -189,15 +188,13 @@ func (s *MercadoPagoService) ProcessWebhook(notificationData map[string]interfac
 
 	}
 
-	
-
 	if topic, ok := notificationData["topic"].(string); ok {
 		utils.Logger.Info("topic:", topic)
 		if topic == "merchant_order" {
 			utils.Logger.Info("Processing merchant order notification")
 		}
 	}
-	
+
 	file, err := os.OpenFile("webhook.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		utils.Logger.Error(fmt.Sprintf("Error creating webhook log: %v", err))

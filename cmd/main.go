@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"os"
 
 	"github.com/labstack/echo/v4"
 
@@ -12,23 +12,25 @@ import (
 )
 
 func main() {
-	utils.Logger.Info("Starting application...")
-
-	err := config.LoadEnv()
-	if err != nil {
-		log.Fatalf("Error loading environment variables: %v", err)
+	env := os.Getenv("APP_ENV")
+	if env == "" {
+		env = "production"
 	}
 
-	cfg := config.Config{}
-	err = cfg.LoadEnv()
+	logger := utils.GetLogger(env)
+
+	logger.Info("Starting application...")
+
+	cfg, err := config.Load()
 	if err != nil {
-		utils.Logger.Fatal("failed to load env variables")
+		utils.Logger.Fatal("Failed to load config", zap.Error(err))
 	}
 
 	e := echo.New()
 
-	routes.SetupRoutes(e)
+	routes.SetupRoutes(e, cfg)
 
-	utils.Logger.Info("Server started", "port", cfg.ServerPort)
+	logger.Info("Server started", zap.String("port", cfg.ServerPort))
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", cfg.ServerPort)))
+	logger.Info("Server stopped")
 }
